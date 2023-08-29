@@ -83,7 +83,7 @@ export async function fetchPostById(id: string) {
                         select: '_id id name parentId image'
                     },
                     {
-                        path: 'childer',
+                        path: 'children',
                         model: Post,
                         populate: {
                             path: 'author',
@@ -116,7 +116,22 @@ export async function addCommentToPost(
         throw new Error('Post not found')
       }
       // Create a new post with the comment text
-      const commentPost = new Post({})
+      const commentPost = new Post({
+        text: commentText,
+        author: userId,
+        parentId: postId,
+      })
+
+      // Save the new post
+      const savedCommentPost = await commentPost.save();
+
+      // Update the original post to include the new comment
+      originalPost.children.push(savedCommentPost._id);
+
+      // Save the original post
+      await originalPost.save();
+
+      revalidatePath(path);
     } catch (error: any) {
         throw new Error(`Error adding comment to post: ${error.message}`)
     }

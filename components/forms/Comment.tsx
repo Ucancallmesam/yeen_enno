@@ -17,6 +17,7 @@ import { usePathname, useRouter } from "next/navigation";
 // import { updateUser } from "@/lib/actions/user.actions";
 import { CommentValidation } from '@/lib/validations/post'
 import Image from "next/image";
+import { addCommentToPost } from "@/lib/actions/post.actions";
 // import { createPost } from "@/lib/actions/post.actions";
 
 interface Props {
@@ -37,14 +38,10 @@ const Comment = ({ postId, currentUserImg, currentUserId}: Props) => {
          })
      
          const onSubmit = async (values: z.infer<typeof CommentValidation>) => {
-        //    await createPost({ 
-        //       text: values.post,
-        //       author: userId,
-        //       communityId: null, 
-        //       path: pathname
-        //    })
+           await addCommentToPost(postId, values.post, JSON.parse(currentUserId), 
+           pathname);
      
-           router.push('/')
+           form.reset();
          }
     return (
     <Form {...form}>
