@@ -141,18 +141,29 @@ import { FilterQuery, SortOrder } from "mongoose";
     }
   }
 
-  export async function getActivity() {
+  export async function getActivity(userId: string) {
     try {
       connectToDB();
 
       // find all posts created by the user
-      const userPosts = await Posts.find({ author: userId });
+      const userPosts = await Post.find({ author: userId });
 
       // Collect all the child post ids (replies) from the 'children' field
       const childPostIds = userPosts.reduce((acc, userPost) => {
         return acc.concat(userPost.children)
+      }, [])
+
+      const replies = await Post.find({
+        _id: { $in: childPostIds },
+        author: { $ne: userId}
+      }).populate({
+        path: 'author',
+        model: User,
+        select: 'name image _id'
       })
-    } catch (error) {
+
+      return replies;
+    } catch (error: any ) {
       throw new Error(`Failed to fetch activity: ${error.message}`)
     }
   }
